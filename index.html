@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Tracker</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>Expense Tracker</h1>
+
+    <input type="number" id="monthlyBudget" placeholder="Enter Monthly Budget">
+
+    <input 
+      type="text" 
+      id="itemName" 
+      placeholder="Enter Item Name"
+      oninput="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1).toLowerCase()"
+    >
+
+    <input type="number" id="amount" placeholder="Enter Amount">
+
+    <button onclick="addExpense()">Add Expense</button>
+
+    <select id="monthFilter" onchange="displayExpenses()"></select>
+
+    <div class="cards">
+      <div class="card blue">
+        <h3>Monthly Budget</h3>
+        <p id="budgetText">₹0</p>
+      </div>
+
+      <div class="card red">
+        <h3>Spent Amount</h3>
+        <p id="spentText">₹0</p>
+      </div>
+
+      <div class="card green">
+        <h3>Remaining Budget</h3>
+        <p id="remainingText">₹0</p>
+      </div>
+
+      <div class="card yellow">
+        <h3>Budget Used</h3>
+        <p id="usedText">0%</p>
+      </div>
+    </div>
+
+    <div id="alertBox">No Alert</div>
+
+    <h2>Expense History</h2>
+    <div id="expenseList"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
