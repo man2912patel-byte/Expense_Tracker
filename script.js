@@ -10,10 +10,52 @@ const monthNames = [
 
 const currentMonthKey = `${monthNames[currentDate.getMonth()]}-${currentDate.getFullYear()}`;
 
+const loginScreen = document.getElementById("loginScreen");
+const mainApp = document.getElementById("mainApp");
+const googleLoginBtn = document.getElementById("googleLoginBtn");
+const skipLoginBtn = document.getElementById("skipLoginBtn");
+const userInfo = document.getElementById("userInfo");
+
 function saveData() {
   localStorage.setItem("expenses", JSON.stringify(expenses));
   localStorage.setItem("monthlyBudgets", JSON.stringify(monthlyBudgets));
 }
+
+function openApp() {
+  loginScreen.style.display = "none";
+  mainApp.style.display = "block";
+}
+
+function showUser() {
+  const savedUser = localStorage.getItem("loggedInUser");
+
+  if (savedUser) {
+    userInfo.innerText = `Hello, ${savedUser}`;
+  } else {
+    userInfo.innerText = "Guest User";
+  }
+}
+
+googleLoginBtn.addEventListener("click", () => {
+  const name = prompt("Enter your Google name");
+
+  if (name) {
+    localStorage.setItem("loggedInUser", name);
+    localStorage.setItem("permanentStorage", "true");
+    showUser();
+    openApp();
+  }
+});
+
+skipLoginBtn.addEventListener("click", () => {
+  localStorage.setItem("guestMode", "true");
+
+  const today = new Date().toDateString();
+  localStorage.setItem("guestDate", today);
+
+  showUser();
+  openApp();
+});
 
 function updateMonthOptions() {
   const monthFilter = document.getElementById("monthFilter");
@@ -47,7 +89,7 @@ function displayExpenses() {
 
   let totalSpent = 0;
 
-  filteredExpenses.forEach(exp => {
+  filteredExpenses.forEach((exp, index) => {
     totalSpent += exp.amount;
 
     expenseList.innerHTML += `
@@ -56,7 +98,15 @@ function displayExpenses() {
           <strong>${exp.itemName}</strong><br>
           ${exp.day} | ${exp.dateTime}
         </div>
-        <div>₹${exp.amount}</div>
+
+        <div>
+          ₹${exp.amount}
+
+          <div class="action-buttons">
+            <button class="edit-btn" onclick="editExpense(${index})">Edit</button>
+            <button class="delete-btn" onclick="deleteExpense(${index})">Delete</button>
+          </div>
+        </div>
       </div>
     `;
   });
@@ -90,7 +140,11 @@ function displayExpenses() {
 document.getElementById("monthlyBudget").addEventListener("change", function () {
   const newBudget = Number(this.value);
 
-  if (!newBudget) return;
+  if (!newBudget || newBudget <= 0) {
+    alert("Budget must be greater than 0");
+    this.value = monthlyBudgets[currentMonthKey] || "";
+    return;
+  }
 
   const confirmReset = confirm(
     "Changing monthly budget will clear current month expense history. Do you want to continue?"
@@ -110,12 +164,12 @@ document.getElementById("monthlyBudget").addEventListener("change", function () 
 
 function addExpense() {
   const budget = Number(document.getElementById("monthlyBudget").value);
-  let itemName = document.getElementById("itemName").value;
+  let itemName = document.getElementById("itemName").value.trim();
   itemName = itemName.charAt(0).toUpperCase() + itemName.slice(1).toLowerCase();
   const amount = Number(document.getElementById("amount").value);
 
-  if (!budget || !itemName || !amount) {
-    alert("Please fill all fields");
+  if (!budget || budget <= 0 || !itemName || !amount || amount <= 0) {
+    alert("Please enter valid details. Amount and Budget must be greater than 0");
     return;
   }
 
@@ -141,7 +195,62 @@ function addExpense() {
   document.getElementById("amount").value = "";
 }
 
+function deleteExpense(index) {
+  const selectedMonth = document.getElementById("monthFilter").value;
+
+  const filteredExpenses = expenses.filter(exp => exp.monthKey === selectedMonth);
+  const expenseToDelete = filteredExpenses[index];
+
+  expenses = expenses.filter(exp => exp !== expenseToDelete);
+
+  saveData();
+  updateMonthOptions();
+  displayExpenses();
+}
+
+function editExpense(index) {
+  const selectedMonth = document.getElementById("monthFilter").value;
+
+  const filteredExpenses = expenses.filter(exp => exp.monthKey === selectedMonth);
+  const expenseToEdit = filteredExpenses[index];
+
+  const newItemName = prompt("Edit item name:", expenseToEdit.itemName);
+  const newAmount = Number(prompt("Edit amount:", expenseToEdit.amount));
+
+  if (!newItemName || newAmount <= 0) {
+    alert("Amount must be greater than 0");
+    return;
+  }
+
+  expenseToEdit.itemName =
+    newItemName.charAt(0).toUpperCase() + newItemName.slice(1).toLowerCase();
+  expenseToEdit.amount = newAmount;
+
+  saveData();
+  displayExpenses();
+}
+
 window.onload = function () {
+  const savedUser = localStorage.getItem("loggedInUser");
+  const guestMode = localStorage.getItem("guestMode");
+  const guestDate = localStorage.getItem("guestDate");
+  const today = new Date().toDateString();
+
+  if (guestMode && guestDate !== today) {
+    localStorage.removeItem("expenses");
+    localStorage.removeItem("monthlyBudgets");
+    localStorage.removeItem("guestMode");
+    localStorage.removeItem("guestDate");
+
+    expenses = [];
+    monthlyBudgets = {};
+  }
+
+  if (savedUser || guestMode) {
+    showUser();
+    openApp();
+  }
+
   if (monthlyBudgets[currentMonthKey]) {
     document.getElementById("monthlyBudget").value = monthlyBudgets[currentMonthKey];
   } else {
