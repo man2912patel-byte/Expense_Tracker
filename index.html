@@ -9,14 +9,35 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Expense Tracker</h1>
+
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <h1>Expense Tracker</h1>
+
+      <p class="login-text">
+        Login with Google to save your expense history permanently.
+      </p>
+
+      <button id="googleLoginBtn">Login with Google</button>
+      <button id="skipLoginBtn">Skip for Now</button>
+
+      <p class="skip-message">
+        If you skip login, your expense history will only stay for one day.
+      </p>
+    </div>
+  </div>
+
+  <div class="container" id="mainApp" style="display: none;">
+    <div class="top-bar">
+      <h1>Expense Tracker</h1>
+      <div id="userInfo"></div>
+    </div>
 
     <input type="number" id="monthlyBudget" placeholder="Enter Monthly Budget">
 
-    <input
-      type="text"
-      id="itemName"
+    <input 
+      type="text" 
+      id="itemName" 
       placeholder="Enter Item Name"
       oninput="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1).toLowerCase()"
     >
